@@ -3,3 +3,4 @@ node_modules/
 
 # dotenv environment variables file
 server/.env.example
+server/.env.example
