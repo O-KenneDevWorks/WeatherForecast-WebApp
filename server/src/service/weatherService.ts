@@ -145,6 +145,7 @@ class WeatherService {
     for (const data of weatherData) {
       // Check for start of new day and make sure it is not the current day.  
       // There may be a case when current weather and the first day in forecast are the same because we are splitting at midnight
+      // It also could be that the final day is undefined because of this count
       // TODO: This needs to be verified
       if (data.dt_txt.split(" ")[1] == '00:00:00' && data.dt_txt.split(" ")[0] != currentWeather.date) {
         const weather = new Weather(
