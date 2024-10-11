@@ -9,7 +9,7 @@ interface Coordinates {
 }
 
 // TODO: Define a class for the Weather object
-class Weather{
+class Weather {
   city: string;
   date: string;
   tempF: string;
@@ -17,7 +17,7 @@ class Weather{
   humidity: string;
   icon: string;
   iconDescription: string;
-  
+
   constructor(city: string, date: string, tempF: string, windSpeed: string, humidity: string, icon: string, iconDescription: string) {
     this.city = city;
     this.date = date;
@@ -46,41 +46,57 @@ interface WeatherData {
 class WeatherService {
   // TODO: Define the baseURL, API key, and city name properties
   cityName: string;
-  APIKey: string;
+  APIKey: string | undefined;
   baseUrl: string;
 
   constructor(cityName: string) {
     // super()
     this.cityName = cityName
-    this.APIKey = process.env.API_KEY || 'fe8aa0a5362d18878a757333b7004e25';
+    this.APIKey = process.env.API_KEY;
     this.baseUrl = process.env.API_BASE_URL || `https://api.openweathermap.org`;
   }
 
   // TODO: Create fetchLocationData method
   private async fetchLocationData(queryURL: string) {
-    // queryURL = `api.openweathermap.org/data/2.5/weather?q=${this.cityName}&appid=${this.APIKey}`;
-    const response = await fetch(queryURL);
-    const parsedResponse = await response.json();
-    console.log(parsedResponse)
-    return parsedResponse // Do I really need return?  The function doesn't specify a return
-  }
+    try {
+        const response = await fetch(queryURL);
+        const parsedResponse = await response.json();
+        
+        // Check if the parsedResponse is an empty array or invalid
+        if (!parsedResponse || parsedResponse.length === 0) {
+            console.error('Failed to get valid location data:', parsedResponse || 'No response');
+            throw new Error('Location Error: No data returned or invalid location');
+        }
+        
+        return parsedResponse; // Return the parsed response if valid
+    } catch (error) {
+        if (error instanceof Error) {
+          console.error('Failed to fetch location data:', error.message || 'Unknown error');
+        } else {
+          console.error('Unexpected error:', error);
+        }
+        // Return a default value or handle the error appropriately
+        throw error;
+        // return { error: 'Unable to retrieve weather data' };
+    }
+}
 
   // TODO: Create destructureLocationData method
   private destructureLocationData(locationData: Coordinates): Coordinates {
-    const {long, lat} = locationData
-    return {long, lat};
+    const { long, lat } = locationData
+    return { long, lat };
   }
 
   // TODO: Create buildGeocodeQuery method 
   // TODO: This needs work
   private buildGeocodeQuery(): string {
     return `${this.baseUrl}/geo/1.0/direct?q=${this.cityName},us&appid=${this.APIKey}`;
-    
+
   }
 
   // TODO: Create buildWeatherQuery method
   private buildWeatherQuery(coordinates: Coordinates): string {
-    const {lat, long} = coordinates;
+    const { lat, long } = coordinates;
     // May want to add units
     // TODO: add &cnt=5 for 5 day forecast
     return `${this.baseUrl}/data/2.5/forecast?lat=${lat}&lon=${long}&units=imperial&cnt=40&appid=${this.APIKey}`
@@ -89,7 +105,7 @@ class WeatherService {
   // TODO: Create fetchAndDestructureLocationData method
   private async fetchAndDestructureLocationData() {
     const queryString = this.buildGeocodeQuery();
-  
+
     // Log the query string for debugging
     console.log('Geocode query string:', queryString);
 
@@ -106,7 +122,7 @@ class WeatherService {
 
     // Destructure the latitude and longitude from the location data
     const coordinates = this.destructureLocationData({ lat: locationData.lat, long: locationData.lon });
-    
+
     return coordinates;
   }
 
@@ -124,7 +140,7 @@ class WeatherService {
       console.error('Incomplete weather data:', response); // Log the entire response
       throw new Error('Weather data is not available or is incomplete');
     }
-  
+
     const weatherData = response.list[0]; // Assuming you want the first item
     const city = this.cityName;
     const date = weatherData.dt_txt.split(" ")[0];
@@ -133,7 +149,7 @@ class WeatherService {
     const humidity = weatherData.main.humidity.toString();
     const icon = weatherData.weather[0].icon.toString();
     const iconDescription = weatherData.weather[0].description.toString();
-  
+
     return new Weather(city, date, temp, wind, humidity, icon, iconDescription);
   }
 
@@ -176,19 +192,19 @@ class WeatherService {
       const coordinates = await this.fetchAndDestructureLocationData();
       const weatherData = await this.fetchWeatherData(coordinates);
       const currentWeather = this.parseCurrentWeather(weatherData);
-      const forecast = this.buildForecastArray(currentWeather, weatherData.list.slice(1))
-      console.log(forecast)
-      return forecast
-      // return this.buildForecastArray(currentWeather, weatherData.list.slice(1));
+      const forecast = this.buildForecastArray(currentWeather, weatherData.list.slice(1));
+      console.log(forecast);
+      return forecast;
     } catch (error) {
       if (error instanceof Error) {
         console.error('Error getting weather for city:', error.message);
       } else {
         console.error('Unexpected error:', error);
       }
-      throw error; // or return a default value or message
+      // Return a default value or handle the error appropriately
+      return { error: 'Unable to retrieve weather data' };
     }
-  }
+}
 }
 
 export default new WeatherService('');
