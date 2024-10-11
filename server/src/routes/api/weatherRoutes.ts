@@ -7,10 +7,9 @@ import HistoryService from '../../service/historyService.js';
 
 // TODO: POST Request with city name to retrieve weather data
 router.post('/', async (req, res) => {
-  // TODO: GET weather data from city name
-  console.log(req.body)
+  console.log(req.body);
   const { cityName } = req.body;
-  console.log("City: " + cityName)
+  console.log("City: " + cityName);
 
   if (!cityName) {
     res.status(400).json({ error: 'City name must be provided' });
@@ -20,24 +19,32 @@ router.post('/', async (req, res) => {
   try {
     // Get weather data for the provided city name
     const weatherData = await WeatherService.getWeatherForCity(cityName);
-    console.log("Time to add city")
-    await HistoryService.addCity(cityName)
 
-    // Send the weather data as a JSON response
-    res.json(weatherData);
-    
-    // TODO: Save city to search history
-  }  catch (error) {
+    // Check if the weatherData contains an 'error' property
+    if ('error' in weatherData) {
+      // If there's an error, return a 404 or appropriate response
+      res.status(404).json({ error: weatherData.error });
+    } else {
+      console.log("Time to add city");
+
+      // Save the valid city to the search history
+      await HistoryService.addCity(cityName);
+
+      // Send the valid weather data as a JSON response
+      res.json(weatherData);
+    }
+  } catch (error) {
     if (error instanceof Error) {
       console.error('Error getting weather data:', error.message);
-    res.status(500).json({ error: error.message });
+      res.status(500).json({ error: error.message });
     } else {
       console.error('Unexpected error:', error);
+      res.status(500).json({ error: 'An unexpected error occurred' });
     }
-    throw error; // or return a default value or message
   }
-  
 });
+
+
 
 // TODO: GET search history
 router.get('/history', async (_req, res) => {
@@ -53,10 +60,10 @@ router.get('/history', async (_req, res) => {
 router.delete('/history/:id', async (req, res) => {
   try {
     console.log(req.params['id']);
-    
+
     // Attempt to remove the city by ID
     await HistoryService.removeCity(req.params['id']);
-    
+
     // If the city is removed successfully, send a 200 status code
     res.status(200).json({ message: 'City successfully deleted' });
   } catch (error) {
