@@ -55,6 +55,11 @@ Use the delete button next to a city in the history to remove it.
 ### Example Screenshot
 ![WeatherApp-ScreenShot](./ExampleScreenshot.jpg)
 
+### Deployment
+The project is deployed on Render and can be accessed online:
+
+[Weather Dashboard](https://weatherforecast-webapp.onrender.com)
+
 ## License
 This project is licensed under the MIT License.
 
