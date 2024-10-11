@@ -59,27 +59,27 @@ class WeatherService {
   // TODO: Create fetchLocationData method
   private async fetchLocationData(queryURL: string) {
     try {
-        const response = await fetch(queryURL);
-        const parsedResponse = await response.json();
-        
-        // Check if the parsedResponse is an empty array or invalid
-        if (!parsedResponse || parsedResponse.length === 0) {
-            console.error('Failed to get valid location data:', parsedResponse || 'No response');
-            throw new Error('Location Error: No data returned or invalid location');
-        }
-        
-        return parsedResponse; // Return the parsed response if valid
+      const response = await fetch(queryURL);
+      const parsedResponse = await response.json();
+
+      // Check if the parsedResponse is an empty array or invalid
+      if (!parsedResponse || parsedResponse.length === 0) {
+        console.error('Failed to get valid location data:', parsedResponse || 'No response');
+        throw new Error('Location Error: No data returned or invalid location');
+      }
+
+      return parsedResponse; // Return the parsed response if valid
     } catch (error) {
-        if (error instanceof Error) {
-          console.error('Failed to fetch location data:', error.message || 'Unknown error');
-        } else {
-          console.error('Unexpected error:', error);
-        }
-        // Return a default value or handle the error appropriately
-        throw error;
-        // return { error: 'Unable to retrieve weather data' };
+      if (error instanceof Error) {
+        console.error('Failed to fetch location data:', error.message || 'Unknown error');
+      } else {
+        console.error('Unexpected error:', error);
+      }
+      // Return a default value or handle the error appropriately
+      throw error;
+      // return { error: 'Unable to retrieve weather data' };
     }
-}
+  }
 
   // TODO: Create destructureLocationData method
   private destructureLocationData(locationData: Coordinates): Coordinates {
@@ -121,7 +121,10 @@ class WeatherService {
     const locationData = response[0];
 
     // Destructure the latitude and longitude from the location data
-    const coordinates = this.destructureLocationData({ lat: locationData.lat, long: locationData.lon });
+    const coordinates = this.destructureLocationData({
+      lat: locationData.lat,
+      long: locationData.lon,
+    });
 
     return coordinates;
   }
@@ -204,7 +207,7 @@ class WeatherService {
       // Return a default value or handle the error appropriately
       return { error: 'Unable to retrieve weather data' };
     }
-}
+  }
 }
 
 export default new WeatherService('');
